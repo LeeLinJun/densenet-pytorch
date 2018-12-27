@@ -15,7 +15,7 @@ import torchvision.datasets as datasets
 import densenet as dn
 
 # used for logging to TensorBoard
-from tensorboard_logger import configure, log_value
+#from tensorboard_logger import configure, log_value
 
 parser = argparse.ArgumentParser(description='PyTorch DenseNet Training')
 parser.add_argument('--epochs', default=300, type=int,
@@ -154,7 +154,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
-        target = target.cuda(async=True)
+        target = target.cuda()
         input = input.cuda()
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
@@ -165,8 +165,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # measure accuracy and record loss
         prec1 = accuracy(output.data, target, topk=(1,))[0]
-        losses.update(loss.data[0], input.size(0))
-        top1.update(prec1[0], input.size(0))
+        losses.update(loss.data.item(), input.size(0))
+        top1.update(prec1.item(), input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -200,7 +200,7 @@ def validate(val_loader, model, criterion, epoch):
 
     end = time.time()
     for i, (input, target) in enumerate(val_loader):
-        target = target.cuda(async=True)
+        target = target.cuda()
         input = input.cuda()
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
@@ -211,8 +211,8 @@ def validate(val_loader, model, criterion, epoch):
 
         # measure accuracy and record loss
         prec1 = accuracy(output.data, target, topk=(1,))[0]
-        losses.update(loss.data[0], input.size(0))
-        top1.update(prec1[0], input.size(0))
+        losses.update(loss.data.item(), input.size(0))
+        top1.update(prec1.item(), input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -228,9 +228,9 @@ def validate(val_loader, model, criterion, epoch):
 
     print(' * Prec@1 {top1.avg:.3f}'.format(top1=top1))
     # log to TensorBoard
-    if args.tensorboard:
-        log_value('val_loss', losses.avg, epoch)
-        log_value('val_acc', top1.avg, epoch)
+    #if args.tensorboard:
+    #    log_value('val_loss', losses.avg, epoch)
+    #    log_value('val_acc', top1.avg, epoch)
     return top1.avg
 
 
@@ -266,8 +266,8 @@ def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 after 150 and 225 epochs"""
     lr = args.lr * (0.1 ** (epoch // 150)) * (0.1 ** (epoch // 225))
     # log to TensorBoard
-    if args.tensorboard:
-        log_value('learning_rate', lr, epoch)
+    # if args.tensorboard:
+    #     log_value('learning_rate', lr, epoch)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
